@@ -1,0 +1,79 @@
+{
+  "product": "Sreda Analytics",
+  "version": "1.0.0",
+  "root": "workspace",
+  "logsDir": "logs",
+  "clearLogs": true,
+  "fastStart": true,
+  "preferStatic": false,
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "ui": {
+    "enabled": false,
+    "mode": "launcher",
+    "port": 9090,
+    "openOnStart": true,
+    "apps": [
+      {
+        "id": "analytics",
+        "title": "Аналитика",
+        "subtitle": "Отчёты и таблицы",
+        "module": "spreadsheet"
+      },
+      {
+        "id": "admin",
+        "title": "Админка",
+        "subtitle": "Управление системой",
+        "module": "admin"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "id": "migrations",
+      "path": "sreda-analytics-migrations",
+      "kind": "oneshot",
+      "start": "npm start",
+      "optional": true,
+      "enabled": true
+    },
+    {
+      "id": "pivot",
+      "path": "sreda-pivot",
+      "kind": "service",
+      "start": "npm start",
+      "dependsOn": ["migrations"],
+      "restart": "on-failure",
+      "port": 3391,
+      "enabled": true,
+      "env": {
+        "REDIS_DISABLED": "true",
+        "ESB_DISABLED": "true"
+      },
+      "envFile": ".env"
+    },
+    {
+      "id": "spreadsheet",
+      "path": "sreda-analytics-spreadsheet-frontend",
+      "kind": "service",
+      "start": "npm run start-win",
+      "buildInstallFlags": "--legacy-peer-deps",
+      "dist": "bi_ui_build",
+      "port": 3380,
+      "enabled": true
+    },
+    {
+      "id": "admin",
+      "path": "frontend-adm",
+      "kind": "service",
+      "start": "npm run startw",
+      "buildInstallFlags": "--legacy-peer-deps",
+      "dist": "build",
+      "port": 3372,
+      "enabled": true,
+      "dependsOn": ["pivot"],
+      "envFile": ".env"
+    }
+  ]
+}

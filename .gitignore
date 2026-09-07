@@ -1,0 +1,12 @@
+node_modules/
+launcher-ui/node_modules/
+dist-release/
+.builder-report.json
+.builder-root
+logs/
+*.log
+.env
+!.env.example
+workspace/**/.env
+.DS_Store
+Thumbs.db

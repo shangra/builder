@@ -1,0 +1,36 @@
+{
+  "name": "sreda-builder",
+  "version": "1.0.0",
+  "description": "Коробочный запуск и сборка Sreda Analytics: один конфиг, одна команда",
+  "type": "module",
+  "bin": {
+    "sreda-builder": "./bin/sreda-builder.js",
+    "builder": "./bin/sreda-builder.js"
+  },
+  "scripts": {
+    "postinstall": "node bin/sreda-builder.js install --root workspace",
+    "env": "node bin/sreda-builder.js env --root workspace",
+    "db": "node bin/sreda-builder.js db --root workspace",
+    "start": "node bin/sreda-builder.js start --root workspace",
+    "build": "node bin/sreda-builder.js build",
+    "list": "node bin/sreda-builder.js list",
+    "validate": "node bin/sreda-builder.js validate"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "bin",
+    "src",
+    "box.config.json",
+    ".env.example",
+    "builder.config.json"
+  ],
+  "keywords": [
+    "builder",
+    "box",
+    "sreda",
+    "analytics"
+  ],
+  "license": "UNLICENSED"
+}

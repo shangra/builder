@@ -1,0 +1,77 @@
+{
+  "name": "sreda-analytics",
+  "root": ".",
+  "outputDir": "dist-release",
+  "concurrency": 3,
+  "defaultProfile": "full",
+  "profiles": {
+    "full": {
+      "description": "Фронтенды + бэкенд (без boxednode)"
+    },
+    "frontend": {
+      "groups": ["frontend"]
+    },
+    "backend": {
+      "groups": ["backend"]
+    },
+    "release": {
+      "description": "Полная сборка: обфускация и бинарник pivot"
+    }
+  },
+  "skipDirs": [
+    "node_modules",
+    "loc-files",
+    "dist-release",
+    "old-analytic"
+  ],
+  "packages": [
+    {
+      "id": "frontend-cms",
+      "dir": "frontend-cms",
+      "group": "frontend",
+      "start": "npm start",
+      "artifacts": ["build", "dist"]
+    },
+    {
+      "id": "frontend-flow",
+      "dir": "frontend-flow",
+      "group": "frontend",
+      "start": "npm start",
+      "artifacts": ["build", "dist"]
+    },
+    {
+      "id": "frontend-mdm",
+      "dir": "frontend-mdm",
+      "group": "frontend",
+      "start": "npm start",
+      "artifacts": ["build", "dist"]
+    },
+    {
+      "id": "spreadsheet-frontend",
+      "dir": "sreda-analytics-spreadsheet-frontend",
+      "group": "frontend",
+      "start": "npm start",
+      "steps": ["npm run build"],
+      "artifacts": ["bi_ui_build"]
+    },
+    {
+      "id": "migrations",
+      "dir": "sreda-analytics-migrations",
+      "group": "backend",
+      "optional": true
+    },
+    {
+      "id": "pivot",
+      "dir": "sreda-pivot",
+      "group": "backend",
+      "start": "npm run dev",
+      "steps": [
+        "npm run core:collect",
+        "npm run build:bundle",
+        { "run": "npm run build:obfuscate", "when": ["release"] },
+        { "run": "npm run build:binary", "when": ["release"] }
+      ],
+      "artifacts": ["dist", "dist-temp"]
+    }
+  ]
+}
