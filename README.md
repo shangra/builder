@@ -1,108 +1,145 @@
-# Куда положить и как пользоваться
+# Sreda Analytics — как запустить коробку
 
-Нужен Node.js 18+ на машине, где запускаете коробку.
+Команды `npm` одинаковые на Windows, macOS и Linux. Отличается только то, как открыть терминал и скопировать файл `.env`.
 
-## 1. Куда класть
+Нужны **Node.js 18 или новее** и доступ к **PostgreSQL**.
 
-Положите этот проект **в корень аналитики** (`SREDA.Analytic`) — рядом с `workspace/`, где лежат модули. В `box.config.json` поле `"root": "workspace"`.
+---
 
-Пример:
+## 1. Установите Node.js
 
-```
-SREDA.Analytic\
-  package.json
-  box.config.json
-  .env.example
-  bin\
-  src\
-  workspace\
-    frontend-adm\
-    sreda-pivot\
-    sreda-analytics-migrations\
-    sreda-analytics-spreadsheet-frontend\
-    logs\
-```
-
-Как перенести: скопируйте из `builder-s` файлы `package.json`, `box.config.json`, `.env.example` и папки `bin`, `src` в корень `SREDA.Analytic`. Если в корне аналитики уже есть свой `src/fs.js` — не затирайте его; лаунчер использует `src/fs-utils.js`.
-
-Если лаунчер оставляете отдельно (как сейчас в `PhpstormProjects\builder-s`), модули не копируйте — при запуске указывайте `--root` на папку `workspace`. Удобнее положить лаунчер внутрь `SREDA.Analytic`.
-
-## 2. Проверить состав
-
-Откройте `box.config.json`. Поле `path` у каждого модуля — имя папки относительно `workspace`.
-
-Сейчас:
-
-| id | папка | что делает при старте |
-| --- | --- | --- |
-| migrations | `workspace/sreda-analytics-migrations` | один раз `npm start` |
-| pivot | `workspace/sreda-pivot` | сервис, порт 3391 |
-| spreadsheet | `workspace/sreda-analytics-spreadsheet-frontend` | `npm run start-win`, порт 3380 |
-| admin | `workspace/frontend-adm` | `npm run startw`, порт 3372 |
-
-- добавить модуль — новый объект в `modules`
-- убрать из поставки — `"enabled": false` или удалить блок
-- папка называется иначе — поправьте `path`
-
-Проверка, что папки видны:
+Проверка в терминале:
 
 ```bash
-node bin/sreda-builder.js list
+node -v
+npm -v
 ```
 
-Если лаунчер не в корне модулей:
+Должно быть `v18` или выше. Если команды не находятся — поставьте Node.js LTS: [https://nodejs.org](https://nodejs.org)
+
+| Система | Как поставить |
+| --- | --- |
+| **Windows** | Установщик с nodejs.org (галочка «Add to PATH»). Либо в PowerShell: `winget install OpenJS.NodeJS.LTS` |
+| **macOS** | Установщик с nodejs.org. Либо в Terminal: `brew install node` |
+| **Linux** | Пакет дистрибутива **не ниже 18**, либо установщик с nodejs.org. После установки откройте новый терминал |
+
+---
+
+## 2. Откройте корень коробки в терминале
+
+Корень — папка, где лежат `package.json`, `box.config.json`, `.env.example` и каталог `workspace`.
+
+**Windows (PowerShell):** в Проводнике откройте папку коробки, в адресной строке введите `powershell` и нажмите Enter. Либо:
+
+```powershell
+cd C:\путь\к\SREDA.Analytic
+```
+
+**macOS:** Программы → Terminal, затем:
 
 ```bash
-node bin/sreda-builder.js list --root C:\Users\23882308\Desktop\project
+cd /путь/к/SREDA.Analytic
 ```
 
-В списке должно быть `deps ok`. Если `нет каталога` — неверный `--root` или `path`. Если `нет node_modules` — сначала шаг 3.
+**Linux:**
 
-## 3. Зависимости (один раз)
+```bash
+cd /путь/к/SREDA.Analytic
+```
 
-Если модули уже выкачаны **и** в каждом есть `node_modules` — этот шаг пропустите.
+---
 
-Иначе из корня коробки одна команда:
+## 3. Поставьте зависимости (один раз)
+
+Из корня коробки:
 
 ```bash
 npm install
 ```
 
-Она ставит зависимости во всех модулях:
+Команда ставит пакеты во все модули в `workspace`. Это может занять несколько минут. Пока идёт установка, терминал не закрывайте.
 
-- migrations и pivot — `npm install`
-- spreadsheet и admin — `npm i --legacy-peer-deps`
+Проверка состава:
 
-## 3a. Конфиги модулей (.env)
+```bash
+npm run list
+```
 
-Скопируйте `.env.example` в `.env` в корне коробки и заполните базу и порты. Затем:
+У модулей должно быть `deps ok`. Если написано `нет node_modules` — повторите `npm install`. Если `нет каталога` — в поставке нет этой папки или неверный путь в `box.config.json`.
+
+---
+
+## 4. Создайте и заполните `.env`
+
+Глобальный `.env` лежит **в корне коробки** (рядом с `package.json`), не внутри `workspace`.
+
+Если файла ещё нет:
+
+**Windows (cmd):**
+
+```bat
+copy .env.example .env
+```
+
+**Windows (PowerShell):**
+
+```powershell
+Copy-Item .env.example .env
+```
+
+**macOS / Linux:**
+
+```bash
+cp .env.example .env
+```
+
+Откройте `.env` в редакторе и заполните доступ к базе. Обязательно:
+
+- `DB_HOST`
+- `DB_PORT`
+- `DB_USER`
+- `DB_PASS`
+- `DB_DATABASE`
+
+Порты сервисов по умолчанию можно не менять:
+
+| Сервис | Порт |
+| --- | --- |
+| Pivot | 3391 |
+| Аналитика | 3380 |
+| Админка | 3372 |
+
+Разлейте настройки по модулям:
 
 ```bash
 npm run env
 ```
 
-Команда запишет `.env` в модули:
+В логе должен быть путь к глобальному `.env` в корне коробки. Команда запишет `.env` в pivot, миграции, аналитику и админку. `LICENSE_KEY` в пивоте на этом шаге ещё пустой.
 
-- pivot — полный шаблон
-- spreadsheet (аналитика) — база из общего `.env`, `ESB_HOST` на пивот
-- migrations — как пивот, CORS только на ESB
-- admin — порт 3372, бэкенд пивота, без MDM
+---
 
-`LICENSE_KEY` в пивоте пока всегда пустой.
+## 5. Примените миграции и введите лицензию
 
-## 3b. Миграции базы
-
-После `npm install` и генерации `.env`:
+PostgreSQL должен быть доступен по данным из `.env`.
 
 ```bash
 npm run db
 ```
 
-В `workspace/sreda-analytics-migrations` выполняется `npm run db`. После успеха в консоли появится запрос `введите лицензионный ключ` — введённое значение запишется в `workspace/sreda-pivot/.env` как `LICENSE_KEY`.
+После успешного применения схемы появится запрос:
 
-## 4. Запуск всей коробки
+```text
+введите лицензионный ключ:
+```
 
-Из корня:
+Вставьте ключ и нажмите Enter. Он запишется в `workspace/sreda-pivot/.env` как `LICENSE_KEY`. Пустой Enter — ключ не меняется.
+
+Запускайте эту команду из обычного терминала (не из фона): запрос ключа нужен интерактивный ввод.
+
+---
+
+## 6. Запустите продукт
 
 ```bash
 npm start
@@ -110,39 +147,38 @@ npm start
 
 Поднимаются:
 
-- pivot — `npm start`
-- аналитика — `npm run start-win`
-- админка — `npm run startw`
+- pivot — http://127.0.0.1:3391
+- аналитика — http://127.0.0.1:3380
+- админка — http://127.0.0.1:3372
 
-Миграции при старте не гоняются (их уже сделал `npm run db`). Остановка — `Ctrl+C`. Логи — `logs\`.
+На Windows аналитика стартует через `npm run start-win`, админка — `npm run startw`. На macOS и Linux — через `npm start` в этих модулях.
 
-После старта открывается оболочка лаунчера: http://127.0.0.1:9090
+Остановка: **Ctrl+C** (на Mac — Control+C). Логи модулей: папка `logs` внутри `workspace`.
 
-В `box.config.json`:
+Миграции при `npm start` повторно не выполняются — их уже сделал `npm run db`.
 
-```json
-"ui": {
-  "mode": "launcher",
-  "apps": [
-    { "id": "analytics", "title": "Аналитика", "module": "spreadsheet" },
-    { "id": "admin", "title": "Админка", "module": "admin" }
-  ]
-}
-```
+---
 
-- `"mode": "launcher"` — приложения внутри оболочки (переключение без новой вкладки)
-- `"mode": "browser"` — аналитика и админка открываются в браузере
-- разово: `node bin/sreda-builder.js start --ui browser`
-- только оболочка, без модулей: `node bin/sreda-builder.js ui`
+## Если что-то пошло не так
 
-Оболочка написана на React (`launcher-ui/`). После правок UI: `npm run ui:build`. В коробку отдаётся уже собранный `launcher-ui/dist`.
+| Что видите | Что сделать |
+| --- | --- |
+| `node` / `npm` не является командой | Node.js не установлен или не в PATH. Откройте **новый** терминал после установки |
+| `нет глобального .env` | Файл должен быть в корне коробки. Повторите шаг 4, не кладите `.env` только в `workspace` |
+| `нет node_modules` | Из корня: `npm install` |
+| `EADDRINUSE` / порт занят | Закройте прошлый запуск (Ctrl+C) или смените порт в `.env` и снова `npm run env` |
+| База не подключается | Проверьте `DB_*` в корневом `.env`, доступность PostgreSQL, затем снова `npm run env` и `npm run db` |
+| На macOS/Linux фронт не стартует | В `box.config.json` у модуля должно быть поле `startUnix` (обычно `npm start`). Имя скрипта смотрите в `package.json` модуля |
 
-Только часть модулей:
+---
+
+## Краткий чеклист
 
 ```bash
-node bin/sreda-builder.js start --only pivot,spreadsheet
+node -v
+npm install
+# скопировать .env.example → .env и заполнить DB_*
+npm run env
+npm run db
+npm start
 ```
-
-## 5. Что отдать заказчику
-
-Один каталог: лаунчер + `box.config.json` + папки модулей (уже с `node_modules`, если коробка собрана). Инструкция заказчику: из корня выполните `npm start`.

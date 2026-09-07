@@ -88,7 +88,7 @@ function normalizeModule(item) {
     id,
     path: modulePath,
     kind: item.kind || 'service',
-    start: item.start || null,
+    start: pickStartCommand(item),
     dist: item.dist || null,
     host: item.host || '0.0.0.0',
     port: item.port || null,
@@ -105,6 +105,14 @@ function normalizeModule(item) {
     buildInstallFlags: item.buildInstallFlags || null,
     ready: item.ready || null,
   };
+}
+
+function pickStartCommand(item) {
+  const unix = item.startUnix || item.startDarwin || item.startLinux;
+  if (process.platform !== 'win32' && unix) {
+    return unix;
+  }
+  return item.start || null;
 }
 
 function normalizeUi(ui = {}) {
