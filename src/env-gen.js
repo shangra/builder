@@ -13,13 +13,7 @@ const TEMPLATES = {
 };
 
 export async function generateModuleEnvs(box, modules, { envFile, dryRun = false } = {}) {
-  const globalPath = envFile || path.join(path.dirname(box.configPath), '.env');
-  if (!(await pathExists(globalPath))) {
-    throw new Error(
-      `Нет глобального .env: ${globalPath}\n` +
-        'Скопируйте .env.example в .env и заполните значения.',
-    );
-  }
+  const globalPath = await resolveGlobalEnvPath(box, envFile);
 
   const env = await loadEnvFile(globalPath);
   const ctx = buildContext(env, box, modules);
@@ -49,6 +43,36 @@ export async function generateModuleEnvs(box, modules, { envFile, dryRun = false
   }
 
   return { globalPath, written };
+}
+
+async function resolveGlobalEnvPath(box, envFile) {
+  if (envFile) {
+    const absolute = path.resolve(envFile);
+    if (!(await pathExists(absolute))) {
+      throw new Error(`Нет файла --env-file: ${absolute}`);
+    }
+    return absolute;
+  }
+
+  const candidates = [
+    path.join(process.cwd(), '.env'),
+    path.join(path.dirname(box.configPath), '.env'),
+    path.join(path.dirname(box.root), '.env'),
+    path.join(box.root, '.env'),
+  ].map((item) => path.resolve(item));
+  const unique = [...new Set(candidates)];
+
+  for (const candidate of unique) {
+    if (await pathExists(candidate)) {
+      logger.info(`глобальный .env: ${candidate}`);
+      return candidate;
+    }
+  }
+
+  throw new Error(
+    `Нет глобального .env. Искал:\n${unique.map((item) => `  ${item}`).join('\n')}\n` +
+      'Скопируйте .env.example в .env в корне аналитики (рядом с package.json) и заполните значения.',
+  );
 }
 
 function buildContext(env, box, modules) {

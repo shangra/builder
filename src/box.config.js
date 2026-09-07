@@ -54,10 +54,11 @@ async function resolveBoxConfigPath(configPath, rootArg) {
   }
 
   const names = ['box.config.json', 'builder.config.json'];
+  // --root — каталог модулей (workspace), не место конфига. Сначала cwd, где package.json.
   const dirs = [
-    rootArg ? path.resolve(rootArg) : null,
     process.cwd(),
     builderDir,
+    rootArg ? path.resolve(rootArg) : null,
     process.env.BOX_ROOT ? path.resolve(process.env.BOX_ROOT) : null,
   ].filter(Boolean);
 
