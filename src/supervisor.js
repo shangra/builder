@@ -4,7 +4,7 @@ import path from 'node:path';
 import { orderModules } from './box.config.js';
 import { loadEnvFile } from './env-file.js';
 import { killChildren, spawnCommand } from './exec.js';
-import { pathExists } from './fs.js';
+import { pathExists } from './fs-utils.js';
 import { startLauncherServer } from './launcher-server.js';
 import { logger } from './logger.js';
 import { boxInstallCommand } from './install-box.js';
@@ -274,10 +274,6 @@ class Supervisor {
           logger.warn(`${mod.id}: нет node_modules (dry-run)`);
           return mod.start;
         }
-        if (mod.optional) {
-          logger.warn(`${mod.id}: нет node_modules, optional - пропуск`);
-          return null;
-        }
         throw new Error(
           `${mod.id}: модуль выкачан, но нет node_modules в ${mod.absDir}\n` +
             'Сначала поставьте зависимости: npm install',
@@ -304,6 +300,10 @@ class Supervisor {
     const result = await spawnCommand(install, { cwd: mod.absDir, env }).done;
     if (result.code !== 0) {
       throw new Error(`${mod.id}: не удалось поставить зависимости`);
+    }
+    const nodeModules = path.join(mod.absDir, 'node_modules');
+    if (!(await pathExists(nodeModules))) {
+      throw new Error(`${mod.id}: npm install завершился, но нет ${nodeModules}`);
     }
     return mod.start;
   }

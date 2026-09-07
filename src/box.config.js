@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inferStart } from './discover.js';
-import { pathExists, readJson } from './fs.js';
+import { pathExists, readJson } from './fs-utils.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const builderDir = path.resolve(here, '..');

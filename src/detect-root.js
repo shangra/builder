@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { pathExists } from './fs.js';
+import { pathExists } from './fs-utils.js';
 
 const builderDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const memoryFile = path.join(builderDir, '.builder-root');

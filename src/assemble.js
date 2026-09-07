@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { pathExists } from './fs.js';
+import { pathExists } from './fs-utils.js';
 
 export async function assembleArtifacts(packages, outputRoot, { dryRun = false } = {}) {
   const copied = [];

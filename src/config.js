@@ -2,7 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { detectAnalyticsRoot, scoreAnalyticsRoot, isAnalyticsRoot } from './detect-root.js';
 import { discoverPackages, inferStart, inferSteps } from './discover.js';
-import { pathExists, readJson } from './fs.js';
+import { pathExists, readJson } from './fs-utils.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const bundledConfigPath = path.resolve(here, '..', 'builder.config.json');

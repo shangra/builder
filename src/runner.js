@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { assembleArtifacts } from './assemble.js';
 import { runCommand } from './exec.js';
-import { pathExists } from './fs.js';
+import { pathExists } from './fs-utils.js';
 import { formatDuration, logger } from './logger.js';
 
 export async function installCommandFor(dir, extraFlags) {

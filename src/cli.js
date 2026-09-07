@@ -3,7 +3,7 @@ import { loadBoxConfig, resolveBoxModules } from './box.config.js';
 import { loadConfig, selectPackages } from './config.js';
 import { writeGeneratedConfig } from './discover.js';
 import { killChildren } from './exec.js';
-import { pathExists } from './fs.js';
+import { pathExists } from './fs-utils.js';
 import { generateModuleEnvs } from './env-gen.js';
 import { installBox } from './install-box.js';
 import { runMigrationsDb } from './migrate.js';
@@ -131,7 +131,12 @@ async function runRuntime(args) {
   if (args.command === 'list' || args.command === 'validate') {
     printBoxList(box, selected, all, args.command === 'validate');
     if (args.command === 'validate') {
-      const blocking = selected.filter((mod) => !mod.optional && !mod.exists);
+      const blocking = selected.filter((mod) => {
+        if (!mod.exists) {
+          return !mod.optional;
+        }
+        return mod.hasPackageJson && !mod.hasNodeModules && mod.kind !== 'static';
+      });
       if (blocking.length > 0) {
         process.exitCode = 1;
       }
@@ -163,9 +168,6 @@ async function runRuntime(args) {
   }
 
   if (args.command === 'install') {
-    for (const mod of selected.filter((item) => !item.exists)) {
-      logger.warn(`${mod.id}: нет каталога ${mod.absDir}, пропуск`);
-    }
     await installBox(box, selected, { dryRun: args.dryRun });
     logger.ok('Зависимости установлены. Запуск: npm start');
     return;
@@ -223,12 +225,14 @@ function printBoxList(box, selected, all, validate) {
     const state = !mod.enabled
       ? 'выключен'
       : !mod.exists
-        ? 'нет каталога'
+        ? mod.optional
+          ? 'нет каталога (можно без него)'
+          : 'нет каталога'
         : `${mod.kind}${mod.start ? ` · ${mod.start}` : ''}${mod.port ? ` :${mod.port}` : ''}${
-            mod.hasNodeModules ? ' · deps ok' : ' · нет node_modules'
+            mod.hasNodeModules ? ' · deps ok' : ' · нет node_modules — нужен npm install'
           }`;
     const mark = inRun ? '*' : ' ';
-    logger.pkg(mod.id, `${mark} ${mod.path} ${state}${mod.optional ? ' optional' : ''}`);
+    logger.pkg(mod.id, `${mark} ${mod.path} ${state}`);
     if (validate && inRun) {
       logger.pkg(mod.id, `    ${mod.absDir}`);
     }

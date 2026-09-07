@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
-import { pathExists } from './fs.js';
+import { pathExists } from './fs-utils.js';
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',

@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 const children = new Set();
 
 export function spawnCommand(command, { cwd, env = {}, onLine } = {}) {
-  const childEnv = { ...process.env, npm_config_fund: 'false', ...env };
+  const childEnv = sanitizeNestedNpmEnv({ ...process.env, npm_config_fund: 'false', ...env }, command);
   if (!childEnv.NO_COLOR && childEnv.FORCE_COLOR == null) {
     childEnv.FORCE_COLOR = '1';
   }
@@ -60,6 +60,39 @@ export function runCommand(command, { cwd, env = {}, dryRun = false, onLine } = 
     return Promise.resolve({ code: 0, stdout: '', stderr: '' });
   }
   return spawnCommand(command, { cwd, env, onLine }).done;
+}
+
+function sanitizeNestedNpmEnv(env, command) {
+  if (!command || !/\bnpm\b/.test(command)) {
+    return env;
+  }
+
+  // postinstall/npm start родителя прокидывает npm_config_prefix и lifecycle —
+  // вложенный npm тогда ставит пакеты в корень коробки, а не в модуль
+  for (const key of Object.keys(env)) {
+    const lower = key.toLowerCase();
+    if (
+      lower.startsWith('npm_lifecycle') ||
+      lower.startsWith('npm_package_') ||
+      lower === 'npm_command' ||
+      lower === 'init_cwd' ||
+      lower === 'prefix' ||
+      lower === 'npm_config_prefix' ||
+      lower === 'npm_config_global_prefix' ||
+      lower === 'npm_config_local_prefix' ||
+      lower === 'npm_config_global' ||
+      lower === 'npm_config_omit' ||
+      lower === 'npm_config_production' ||
+      lower === 'npm_config_only' ||
+      lower === 'npm_config_ignore_scripts'
+    ) {
+      delete env[key];
+    }
+  }
+
+  env.npm_config_fund = 'false';
+  env.npm_config_audit = env.npm_config_audit || 'false';
+  return env;
 }
 
 export function killChildren() {

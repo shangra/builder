@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import { pathExists } from './fs.js';
+import { pathExists } from './fs-utils.js';
 
 export async function loadEnvFile(filePath) {
   if (!filePath || !(await pathExists(filePath))) {

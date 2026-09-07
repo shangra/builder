@@ -23,7 +23,7 @@ SREDA.Analytic\
     logs\
 ```
 
-Как перенести: скопируйте из `builder-s` файлы `package.json`, `box.config.json`, `.env.example` и папки `bin`, `src` в корень `SREDA.Analytic`.
+Как перенести: скопируйте из `builder-s` файлы `package.json`, `box.config.json`, `.env.example` и папки `bin`, `src` в корень `SREDA.Analytic`. Если в корне аналитики уже есть свой `src/fs.js` — не затирайте его; лаунчер использует `src/fs-utils.js`.
 
 Если лаунчер оставляете отдельно (как сейчас в `PhpstormProjects\builder-s`), модули не копируйте — при запуске указывайте `--root` на папку `workspace`. Удобнее положить лаунчер внутрь `SREDA.Analytic`.
 

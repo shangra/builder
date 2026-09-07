@@ -2,7 +2,7 @@ import path from 'node:path';
 import readline from 'node:readline/promises';
 import { loadEnvFile, upsertEnvKey } from './env-file.js';
 import { spawnCommand } from './exec.js';
-import { pathExists } from './fs.js';
+import { pathExists } from './fs-utils.js';
 import { logger } from './logger.js';
 
 export async function runMigrationsDb(box, modules, { dryRun = false } = {}) {

@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { formatEnvValue, loadEnvFile, writeEnvFile } from './env-file.js';
-import { pathExists } from './fs.js';
+import { pathExists } from './fs-utils.js';
 import { logger } from './logger.js';
 
 const HEADER = '# ВНИМАНИЕ!!! Этот файл сгенерирован автоматически и может быть перезаписан!';

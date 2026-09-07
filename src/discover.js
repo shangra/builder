@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { pathExists, readJson } from './fs.js';
+import { pathExists, readJson } from './fs-utils.js';
 
 const DEFAULT_SKIP = new Set([
   'node_modules',
